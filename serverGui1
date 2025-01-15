@@ -1,0 +1,144 @@
+from PyQt5 import QtCore, QtWidgets
+
+
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(600, 400)
+
+        # Central widget
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+
+        # Tab Widget
+        self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
+        self.tabWidget.setGeometry(QtCore.QRect(0, 0, 600, 350))
+        self.tabWidget.setObjectName("tabWidget")
+
+        # Workstations Tab
+        self.Workstations = QtWidgets.QWidget()
+        self.Workstations.setObjectName("Workstations")
+
+        # Layout for Workstations Tab
+        self.workstationsLayout = QtWidgets.QVBoxLayout(self.Workstations)
+
+       # Console Button
+        self.consoleButton = QtWidgets.QPushButton("Console")
+        self.consoleButton.setObjectName("consoleButton")
+        self.consoleButton.setFixedWidth(150)  # Match the scroll area width
+        self.consoleButton.clicked.connect(self.show_console)
+        self.workstationsLayout.addWidget(self.consoleButton, alignment=QtCore.Qt.AlignHCenter)
+
+        # Scroll Area
+        self.scrollArea = QtWidgets.QScrollArea(self.Workstations)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setFixedWidth(150)  # Ensure it stays column-aligned
+        self.scrollArea.setObjectName("scrollArea")
+
+        # Scroll Area Content
+        self.scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+        self.scrollLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
+
+        # Example PCs in QListWidget
+        self.pcList = QtWidgets.QListWidget(self.scrollAreaWidgetContents)
+        self.pcList.addItems([f"PC {i + 1}" for i in range(20)])
+        self.scrollLayout.addWidget(self.pcList)
+
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.workstationsLayout.addWidget(self.scrollArea)
+
+        self.tabWidget.addTab(self.Workstations, "Workstations")
+
+        # Additional Tabs
+        self.tab_2 = QtWidgets.QWidget()
+        self.tabWidget.addTab(self.tab_2, "Cards")
+
+        self.tab_3 = QtWidgets.QWidget()
+        self.tabWidget.addTab(self.tab_3, "Clients")
+
+        self.tab_5 = QtWidgets.QWidget()
+        self.tabWidget.addTab(self.tab_5, "Services")
+
+        self.tab_6 = QtWidgets.QWidget()
+        self.tabWidget.addTab(self.tab_6, "Session journal")
+
+        self.tab_4 = QtWidgets.QWidget()
+        self.tabWidget.addTab(self.tab_4, "Income journal")
+
+        MainWindow.setCentralWidget(self.centralwidget)
+
+        # Menu Bar
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 600, 21))
+        self.menubar.setObjectName("menubar")
+        MainWindow.setMenuBar(self.menubar)
+
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        MainWindow.setStatusBar(self.statusbar)
+
+        # Menus
+        self.menuFile = QtWidgets.QMenu(self.menubar, title="File")
+        self.menuMode = QtWidgets.QMenu(self.menubar, title="Mode")
+        self.menuDynamic = None  # Placeholder for dynamic menus
+        self.menuTools = QtWidgets.QMenu(self.menubar, title="Tools")
+        self.menuHelp = QtWidgets.QMenu(self.menubar, title="Help")
+
+        self.menubar.addAction(self.menuFile.menuAction())
+        self.menubar.addAction(self.menuMode.menuAction())
+        self.menubar.addAction(self.menuTools.menuAction())
+        self.menubar.addAction(self.menuHelp.menuAction())
+
+        self.retranslateUi(MainWindow)
+        self.tabWidget.setCurrentIndex(0)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+        # Connect Signals
+        self.tabWidget.currentChanged.connect(self.update_menu)
+
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+
+    def update_menu(self, index):
+        """Update the menu bar based on the selected tab."""
+        if self.menuDynamic:
+            self.menubar.removeAction(self.menuDynamic.menuAction())
+
+        tab_name = self.tabWidget.tabText(index)
+        self.menuDynamic = QtWidgets.QMenu(self.menubar)
+        self.menuDynamic.setTitle(tab_name)
+
+        # Add tab-specific actions
+        if tab_name == "Workstations":
+            self.menuDynamic.addAction("Add Workstation")
+        elif tab_name == "Cards":
+            self.menuDynamic.addAction("Add Card")
+        elif tab_name == "Clients":
+            self.menuDynamic.addAction("Add Client")
+        elif tab_name == "Services":
+            self.menuDynamic.addAction("Add Service")
+        elif tab_name == "Session journal":
+            self.menuDynamic.addAction("View Sessions")
+        elif tab_name == "Income journal":
+            self.menuDynamic.addAction("View Income")
+
+        self.menubar.insertMenu(self.menuTools.menuAction(), self.menuDynamic)
+
+    def show_console(self):
+        """Display the console in the central area."""
+        consoleWidget = QtWidgets.QTextEdit()
+        consoleWidget.setText("Console Output Here...")
+        self.tabWidget.removeTab(self.tabWidget.indexOf(self.Workstations))  # Temporarily remove Workstations
+        self.tabWidget.insertTab(0, consoleWidget, "Workstations")
+        self.tabWidget.setCurrentIndex(0)
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
