@@ -106,6 +106,10 @@ class Ui_MainWindow(object):
         self.menus = [self.menuFile, self.menuMode, self.menuTab, self.menuTools, self.menuHelp]
         self.update_menu_bar()
 
+        # Variables to track last selected PC in Workstations
+        self.lastSelectedPC = None
+        self.currentTab = None
+
         # Start with Console Page visible in the Workstations tab
         self.rightPanel.setCurrentWidget(self.consolePage)
 
@@ -115,22 +119,24 @@ class Ui_MainWindow(object):
         for tab, button in self.tabButtons.items():
             button.setChecked(tab == tab_name)
 
-        # Update the Right Panel
+        # Handle Right Panel Updates
         if tab_name == "Workstations":
-            # Keep the current page (console or selected PC) visible
-            currentWidget = self.rightPanel.currentWidget()
-            if currentWidget not in [self.consolePage] + list(self.pcPages.values()):
+            # Restore the last selected PC or default to console
+            if self.lastSelectedPC:
+                self.rightPanel.setCurrentWidget(self.pcPages[self.lastSelectedPC])
+            else:
                 self.rightPanel.setCurrentWidget(self.consolePage)
-        elif tab_name in self.tabPages:
-            self.rightPanel.setCurrentWidget(self.tabPages[tab_name])
-
-        # Update the Left Panel
-        if tab_name == "Workstations":
+            # Show the Workstations left panel
             self.leftPanelContent.setCurrentWidget(self.workstationsWidget)
         elif tab_name in self.tabPages:
+            self.rightPanel.setCurrentWidget(self.tabPages[tab_name])
+            # Set a placeholder left panel for other tabs
             page = QtWidgets.QLabel(f"{tab_name} Left Content")
             self.leftPanelContent.addWidget(page)
             self.leftPanelContent.setCurrentWidget(page)
+
+        # Update current tab tracker
+        self.currentTab = tab_name
 
         # Update Menu Bar
         self.menuTab.setTitle(tab_name)  # Update the central tab name in the menu bar
@@ -139,11 +145,13 @@ class Ui_MainWindow(object):
     def show_console(self):
         """Show the Console Page without affecting the tabs."""
         self.rightPanel.setCurrentWidget(self.consolePage)
+        self.lastSelectedPC = None  # Clear the PC selection when console is active
 
     def switch_page(self, pc_name):
         """Switch to the selected PC Page."""
         if pc_name in self.pcPages:
             self.rightPanel.setCurrentWidget(self.pcPages[pc_name])
+            self.lastSelectedPC = pc_name  # Track the last selected PC
             self.update_menu_bar()
 
     def update_menu_bar(self):
