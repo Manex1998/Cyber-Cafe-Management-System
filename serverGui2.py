@@ -79,22 +79,6 @@ class Ui_MainWindow(object):
             self.tabPages[tab] = page
             self.rightPanel.addWidget(page)
 
-        # Add Pages for Tabs in Left Panel
-        self.leftTabPages = {}
-        for tab in self.tabs:
-            if tab == "Workstations":
-                self.leftTabPages[tab] = self.workstationsWidget  # Console + Scroll area for Workstations
-            else:
-                page = QtWidgets.QLabel(f"{tab} Left Content")
-                page.setAlignment(QtCore.Qt.AlignCenter)
-                self.leftTabPages[tab] = page
-                self.leftPanelContent.addWidget(page)
-
-        # Add Console Page
-        self.consolePage = QtWidgets.QTextEdit()
-        self.consolePage.setPlainText("Console Output Here...")
-        self.rightPanel.addWidget(self.consolePage)
-
         # Add Placeholder Pages for PCs
         self.pcPages = {}
         for i in range(20):
@@ -102,6 +86,11 @@ class Ui_MainWindow(object):
             pcPage.setAlignment(QtCore.Qt.AlignCenter)
             self.pcPages[f"PC {i + 1}"] = pcPage
             self.rightPanel.addWidget(pcPage)
+
+        # Add Console Page
+        self.consolePage = QtWidgets.QTextEdit()
+        self.consolePage.setPlainText("Console Output Here...")
+        self.rightPanel.addWidget(self.consolePage)
 
         # Menu Bar
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -117,6 +106,9 @@ class Ui_MainWindow(object):
         self.menus = [self.menuFile, self.menuMode, self.menuTab, self.menuTools, self.menuHelp]
         self.update_menu_bar()
 
+        # Start with Console Page visible in the Workstations tab
+        self.rightPanel.setCurrentWidget(self.consolePage)
+
     def switch_tab(self, tab_name):
         """Switch to the selected tab and update both left and right panels."""
         # Update Tab Button States
@@ -124,12 +116,21 @@ class Ui_MainWindow(object):
             button.setChecked(tab == tab_name)
 
         # Update the Right Panel
-        if tab_name in self.tabPages:
+        if tab_name == "Workstations":
+            # Keep the current page (console or selected PC) visible
+            currentWidget = self.rightPanel.currentWidget()
+            if currentWidget not in [self.consolePage] + list(self.pcPages.values()):
+                self.rightPanel.setCurrentWidget(self.consolePage)
+        elif tab_name in self.tabPages:
             self.rightPanel.setCurrentWidget(self.tabPages[tab_name])
 
         # Update the Left Panel
-        if tab_name in self.leftTabPages:
-            self.leftPanelContent.setCurrentWidget(self.leftTabPages[tab_name])
+        if tab_name == "Workstations":
+            self.leftPanelContent.setCurrentWidget(self.workstationsWidget)
+        elif tab_name in self.tabPages:
+            page = QtWidgets.QLabel(f"{tab_name} Left Content")
+            self.leftPanelContent.addWidget(page)
+            self.leftPanelContent.setCurrentWidget(page)
 
         # Update Menu Bar
         self.menuTab.setTitle(tab_name)  # Update the central tab name in the menu bar
