@@ -77,23 +77,19 @@ class Ui_MainWindow(object):
         # Add Pages for Tabs in Right Panel
         self.tabPages = {}
         for tab in self.tabs:
-            page = QtWidgets.QLabel(f"{tab} Page")
-            page.setAlignment(QtCore.Qt.AlignCenter)
+            page = self.create_bordered_page(f"{tab} Page")
             self.tabPages[tab] = page
             self.rightPanel.addWidget(page)
 
         # Add Placeholder Pages for PCs
         self.pcPages = {}
         for i in range(20):
-            pcPage = QtWidgets.QLabel(f"PC {i + 1} Information")
-            pcPage.setAlignment(QtCore.Qt.AlignCenter)
+            pcPage = self.create_bordered_page(f"PC {i + 1} Information")
             self.pcPages[f"PC {i + 1}"] = pcPage
             self.rightPanel.addWidget(pcPage)
 
         # Add Console Page
-        self.consolePage = QtWidgets.QTextEdit()
-        self.consolePage.setPlainText("Console Output Here...")
-
+        self.consolePage = self.create_bordered_page("Console Output Here...", is_text_edit=True)
         self.rightPanel.addWidget(self.consolePage)
 
         # Menu Bar
@@ -117,20 +113,21 @@ class Ui_MainWindow(object):
         # Start with Console Page visible in the Workstations tab
         self.rightPanel.setCurrentWidget(self.consolePage)
 
-    def create_left_panel_page(self, content):
-        """Helper function to create a left panel page with a frame and border."""
-        page = QtWidgets.QWidget()
-        layout = QtWidgets.QVBoxLayout(page)
-        label = QtWidgets.QLabel(content)
-        label.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(label)
-
-        # Create a QFrame with a border to give it a box-like appearance
+    def create_bordered_page(self, content, is_text_edit=False):
+        """Helper function to create a bordered page with optional text editing."""
         frame = QtWidgets.QFrame()
-        frame.setFrameShape(QtWidgets.QFrame.Box)  # Box shape for the frame
-        frame.setFrameShadow(QtWidgets.QFrame.Raised)  # Raised shadow for 3D effect
-        frame.setLayout(layout)
+        frame.setFrameShape(QtWidgets.QFrame.Box)
+        frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        layout = QtWidgets.QVBoxLayout(frame)
 
+        if is_text_edit:
+            widget = QtWidgets.QTextEdit()
+            widget.setPlainText(content)
+        else:
+            widget = QtWidgets.QLabel(content)
+            widget.setAlignment(QtCore.Qt.AlignCenter)
+
+        layout.addWidget(widget)
         return frame
 
     def switch_tab(self, tab_name):
@@ -151,7 +148,7 @@ class Ui_MainWindow(object):
         elif tab_name in self.tabPages:
             self.rightPanel.setCurrentWidget(self.tabPages[tab_name])
             # Set a left panel with a boxed frame for other tabs
-            page = self.create_left_panel_page(f"{tab_name} Left Content")
+            page = self.create_bordered_page(f"{tab_name} Left Content")
             self.leftPanelContent.addWidget(page)
             self.leftPanelContent.setCurrentWidget(page)
 
@@ -189,3 +186,4 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
+
